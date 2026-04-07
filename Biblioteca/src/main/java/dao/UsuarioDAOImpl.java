@@ -10,17 +10,21 @@ public class UsuarioDAOImpl implements UsuarioDAO {
 
     @Override
     public void salvar(Usuario usuario) {
-        String sql = "INSERT INTO usuarios (nome, email, telefone) VALUES (?, ?, ?)";
+        String sql = "INSERT INTO usuarios (nome, email, cpf, telefone, data_cadastro, endereco) VALUES (?, ?, ?, ?, ?, ?)";
         try (Connection conn = ConexaoBanco.getConexao();
-             PreparedStatement stmt = conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
+                PreparedStatement stmt = conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
 
             stmt.setString(1, usuario.getNome());
             stmt.setString(2, usuario.getEmail());
-            stmt.setString(3, usuario.getTelefone()); // ✅ telefone
+            stmt.setString(3, usuario.getCpf());
+            stmt.setString(4, usuario.getTelefone());
+            stmt.setTimestamp(5, usuario.getDataCadastro());
+            stmt.setString(6, usuario.getEndereco());
             stmt.executeUpdate();
 
             ResultSet rs = stmt.getGeneratedKeys();
-            if (rs.next()) usuario.setId(rs.getInt(1));
+            if (rs.next())
+                usuario.setId(rs.getInt(1));
             System.out.println("✅ Usuário salvo com ID: " + usuario.getId());
 
         } catch (SQLException e) {
@@ -32,17 +36,12 @@ public class UsuarioDAOImpl implements UsuarioDAO {
     public Usuario buscarPorId(int id) {
         String sql = "SELECT * FROM usuarios WHERE id = ?";
         try (Connection conn = ConexaoBanco.getConexao();
-             PreparedStatement stmt = conn.prepareStatement(sql)) {
+                PreparedStatement stmt = conn.prepareStatement(sql)) {
 
             stmt.setInt(1, id);
             ResultSet rs = stmt.executeQuery();
             if (rs.next()) {
-                return new Usuario(
-                        rs.getInt("id"),
-                        rs.getString("nome"),
-                        rs.getString("email"),
-                        rs.getString("telefone") // ✅ telefone
-                );
+                return montarUsuario(rs);
             }
         } catch (SQLException e) {
             throw new RuntimeException("Erro ao buscar usuário: " + e.getMessage(), e);
@@ -55,16 +54,11 @@ public class UsuarioDAOImpl implements UsuarioDAO {
         String sql = "SELECT * FROM usuarios";
         List<Usuario> usuarios = new ArrayList<>();
         try (Connection conn = ConexaoBanco.getConexao();
-             PreparedStatement stmt = conn.prepareStatement(sql);
-             ResultSet rs = stmt.executeQuery()) {
+                PreparedStatement stmt = conn.prepareStatement(sql);
+                ResultSet rs = stmt.executeQuery()) {
 
             while (rs.next()) {
-                usuarios.add(new Usuario(
-                        rs.getInt("id"),
-                        rs.getString("nome"),
-                        rs.getString("email"),
-                        rs.getString("telefone") // ✅ telefone
-                ));
+                usuarios.add(montarUsuario(rs));
             }
         } catch (SQLException e) {
             throw new RuntimeException("Erro ao listar usuários: " + e.getMessage(), e);
@@ -74,14 +68,16 @@ public class UsuarioDAOImpl implements UsuarioDAO {
 
     @Override
     public void atualizar(Usuario usuario) {
-        String sql = "UPDATE usuarios SET nome = ?, email = ?, telefone = ? WHERE id = ?";
+        String sql = "UPDATE usuarios SET nome = ?, email = ?, cpf = ?, telefone = ?, endereco = ? WHERE id = ?";
         try (Connection conn = ConexaoBanco.getConexao();
-             PreparedStatement stmt = conn.prepareStatement(sql)) {
+                PreparedStatement stmt = conn.prepareStatement(sql)) {
 
             stmt.setString(1, usuario.getNome());
             stmt.setString(2, usuario.getEmail());
-            stmt.setString(3, usuario.getTelefone()); // ✅ telefone
-            stmt.setInt(4, usuario.getId());
+            stmt.setString(3, usuario.getCpf());
+            stmt.setString(4, usuario.getTelefone());
+            stmt.setString(5, usuario.getEndereco());
+            stmt.setInt(6, usuario.getId());
             stmt.executeUpdate();
             System.out.println("✅ Usuário atualizado!");
 
@@ -94,7 +90,7 @@ public class UsuarioDAOImpl implements UsuarioDAO {
     public void deletar(int id) {
         String sql = "DELETE FROM usuarios WHERE id = ?";
         try (Connection conn = ConexaoBanco.getConexao();
-             PreparedStatement stmt = conn.prepareStatement(sql)) {
+                PreparedStatement stmt = conn.prepareStatement(sql)) {
 
             stmt.setInt(1, id);
             stmt.executeUpdate();
@@ -103,5 +99,16 @@ public class UsuarioDAOImpl implements UsuarioDAO {
         } catch (SQLException e) {
             throw new RuntimeException("Erro ao deletar usuário: " + e.getMessage(), e);
         }
+    }
+
+    private Usuario montarUsuario(ResultSet rs) throws SQLException {
+        return new Usuario(
+                rs.getInt("id"),
+                rs.getString("nome"),
+                rs.getString("email"),
+                rs.getString("cpf"),
+                rs.getString("telefone"),
+                rs.getTimestamp("data_cadastro"),
+                rs.getString("endereco"));
     }
 }

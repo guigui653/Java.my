@@ -1,18 +1,14 @@
 public class ContaBancaria {
-    // 1. Atributos (Privados = Segurança)
     private int numeroConta;
     private String titular;
     private double saldo;
 
-    // 2. Construtor (Prepara o terreno)
     public ContaBancaria(int numeroConta, String titular) {
         this.numeroConta = numeroConta;
         this.titular = titular;
-        this.saldo = 0.0; // Toda conta começa zerada por segurança
+        this.saldo = 0.0;
     }
 
-    // 3. Métodos (Ações)
-    // GETTERS (Apenas leitura)
     public int getNumeroConta() {
         return numeroConta;
     }
@@ -25,7 +21,6 @@ public class ContaBancaria {
         return saldo;
     }
 
-    // AÇÃO DEPOSITAR (Void: É uma ordem, não devolve nada)
     public void depositar(double valor) {
         if (valor > 0) {
             this.saldo += valor;
@@ -35,13 +30,12 @@ public class ContaBancaria {
         }
     }
 
-    // AÇÃO SACAR (Boolean: É uma pergunta - "Consegui sacar?")
     public boolean sacar(double valor) {
         if (this.saldo >= valor && valor > 0) {
-            this.saldo -= valor; // Diminui o saldo
-            return true; // Deu certo!
+            this.saldo -= valor;
+            return true;
         } else {
-            return false; // Deu errado!
+            return false;
         }
     }
 }

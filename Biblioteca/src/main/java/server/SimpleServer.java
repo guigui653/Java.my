@@ -6,7 +6,7 @@ import java.net.InetSocketAddress;
 
 public class SimpleServer {
     public static void main(String[] args) throws Exception {
-        HttpServer server = HttpServer.create(new InetSocketAddress(8090), 0);
+        HttpServer server = HttpServer.create(new InetSocketAddress(8081), 0);
         server.createContext("/", exchange -> {
             String response = "OK";
             exchange.sendResponseHeaders(200, response.length());
@@ -15,6 +15,6 @@ public class SimpleServer {
             os.close();
         });
         server.start();
-        System.out.println("Servidor simples rodando na porta 8090");
+        System.out.println("Servidor simples rodando na porta 8081");
     }
 }

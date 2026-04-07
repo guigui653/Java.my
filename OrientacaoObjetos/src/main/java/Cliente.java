@@ -2,7 +2,7 @@ public class Cliente extends ContaBancaria {
     private String cpf;
 
     public Cliente(int numeroConta, String titular, String cpf) {
-        super(numeroConta, titular); // Chama o construtor da classe pai
+        super(numeroConta, titular);
         this.cpf = cpf;
     }
 

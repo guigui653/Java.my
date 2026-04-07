@@ -8,7 +8,6 @@ public class Celular {
     public Celular(String marca, String modelo, double preco, int armazenamento, int bateria) {
         this.marca = marca;
         this.modelo = modelo;
-        // Usamos os setters no construtor para garantir que as validações sejam aplicadas desde a criação
         setPreco(preco);
         setArmazenamento(armazenamento);
         setBateria(bateria);
@@ -72,18 +71,14 @@ public class Celular {
     }
 
     public void usarCelular(int i) {
-
     }
 
     public void carregar(int i) {
-
     }
 
     public void aplicarDesconto(int i) {
-
     }
 
     public void Menu() {
-
     }
 }

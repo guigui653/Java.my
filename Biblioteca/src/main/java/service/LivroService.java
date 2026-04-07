@@ -13,7 +13,7 @@ public class LivroService {
         this.livroDAO = new LivroDAOImpl();
     }
 
-    public void cadastrarLivro(String titulo, String autor, String isbn, int quantidade, String categoria) {
+    public void cadastrarLivro(String titulo, String autor, String editora, String isbn, int anoPublicacao, int quantidade, String statusLivro, String categoria) {
         if (titulo == null || titulo.isBlank()) {
             throw new IllegalArgumentException("Título não pode ser vazio!");
         }
@@ -21,7 +21,7 @@ public class LivroService {
             throw new IllegalArgumentException("Quantidade não pode ser negativa!");
         }
 
-        Livro livro = new Livro(titulo, autor, isbn, quantidade, categoria);
+        Livro livro = new Livro(titulo, autor, editora, isbn, anoPublicacao, quantidade, statusLivro, categoria);
         livroDAO.salvar(livro);
     }
 

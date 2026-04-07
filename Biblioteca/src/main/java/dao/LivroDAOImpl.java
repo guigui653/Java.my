@@ -10,17 +10,21 @@ public class LivroDAOImpl implements LivroDAO {
 
     @Override
     public void salvar(Livro livro) {
-        String sql = "INSERT INTO livros (titulo, autor, isbn, quantidade, categoria) VALUES (?, ?, ?, ?, ?)";
+        String sql = "INSERT INTO livros (titulo, autor, editora, isbn, ano_publicacao, quantidade, status_livro, categoria) VALUES (?, ?, ?, ?, ?, ?, ?, ?)";
         try (Connection conn = ConexaoBanco.getConexao();
-             PreparedStatement stmt = conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
+                PreparedStatement stmt = conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
             stmt.setString(1, livro.getTitulo());
             stmt.setString(2, livro.getAutor());
-            stmt.setString(3, livro.getIsbn());
-            stmt.setInt(4, livro.getQuantidade());
-            stmt.setString(5, livro.getCategoria());
+            stmt.setString(3, livro.getEditora());
+            stmt.setString(4, livro.getIsbn());
+            stmt.setInt(5, livro.getAnoPublicacao());
+            stmt.setInt(6, livro.getQuantidade());
+            stmt.setString(7, livro.getStatusLivro());
+            stmt.setString(8, livro.getCategoria());
             stmt.executeUpdate();
             ResultSet rs = stmt.getGeneratedKeys();
-            if (rs.next()) livro.setId(rs.getInt(1));
+            if (rs.next())
+                livro.setId(rs.getInt(1));
         } catch (SQLException e) {
             throw new RuntimeException("Erro ao salvar livro: " + e.getMessage(), e);
         }
@@ -30,10 +34,11 @@ public class LivroDAOImpl implements LivroDAO {
     public Livro buscarPorId(int id) {
         String sql = "SELECT * FROM livros WHERE id = ?";
         try (Connection conn = ConexaoBanco.getConexao();
-             PreparedStatement stmt = conn.prepareStatement(sql)) {
+                PreparedStatement stmt = conn.prepareStatement(sql)) {
             stmt.setInt(1, id);
             ResultSet rs = stmt.executeQuery();
-            if (rs.next()) return montarLivro(rs);
+            if (rs.next())
+                return montarLivro(rs);
         } catch (SQLException e) {
             throw new RuntimeException("Erro ao buscar livro: " + e.getMessage(), e);
         }
@@ -45,9 +50,10 @@ public class LivroDAOImpl implements LivroDAO {
         String sql = "SELECT * FROM livros";
         List<Livro> livros = new ArrayList<>();
         try (Connection conn = ConexaoBanco.getConexao();
-             PreparedStatement stmt = conn.prepareStatement(sql);
-             ResultSet rs = stmt.executeQuery()) {
-            while (rs.next()) livros.add(montarLivro(rs));
+                PreparedStatement stmt = conn.prepareStatement(sql);
+                ResultSet rs = stmt.executeQuery()) {
+            while (rs.next())
+                livros.add(montarLivro(rs));
         } catch (SQLException e) {
             throw new RuntimeException("Erro ao listar livros: " + e.getMessage(), e);
         }
@@ -59,13 +65,14 @@ public class LivroDAOImpl implements LivroDAO {
         String sql = "SELECT * FROM livros WHERE titulo LIKE ? OR autor LIKE ? OR categoria LIKE ?";
         List<Livro> livros = new ArrayList<>();
         try (Connection conn = ConexaoBanco.getConexao();
-             PreparedStatement stmt = conn.prepareStatement(sql)) {
+                PreparedStatement stmt = conn.prepareStatement(sql)) {
             String t = "%" + termo + "%";
             stmt.setString(1, t);
             stmt.setString(2, t);
             stmt.setString(3, t);
             ResultSet rs = stmt.executeQuery();
-            while (rs.next()) livros.add(montarLivro(rs));
+            while (rs.next())
+                livros.add(montarLivro(rs));
         } catch (SQLException e) {
             throw new RuntimeException("Erro ao buscar: " + e.getMessage(), e);
         }
@@ -74,15 +81,18 @@ public class LivroDAOImpl implements LivroDAO {
 
     @Override
     public void atualizar(Livro livro) {
-        String sql = "UPDATE livros SET titulo=?, autor=?, isbn=?, quantidade=?, categoria=? WHERE id=?";
+        String sql = "UPDATE livros SET titulo=?, autor=?, editora=?, isbn=?, ano_publicacao=?, quantidade=?, status_livro=?, categoria=? WHERE id=?";
         try (Connection conn = ConexaoBanco.getConexao();
-             PreparedStatement stmt = conn.prepareStatement(sql)) {
+                PreparedStatement stmt = conn.prepareStatement(sql)) {
             stmt.setString(1, livro.getTitulo());
             stmt.setString(2, livro.getAutor());
-            stmt.setString(3, livro.getIsbn());
-            stmt.setInt(4, livro.getQuantidade());
-            stmt.setString(5, livro.getCategoria());
-            stmt.setInt(6, livro.getId());
+            stmt.setString(3, livro.getEditora());
+            stmt.setString(4, livro.getIsbn());
+            stmt.setInt(5, livro.getAnoPublicacao());
+            stmt.setInt(6, livro.getQuantidade());
+            stmt.setString(7, livro.getStatusLivro());
+            stmt.setString(8, livro.getCategoria());
+            stmt.setInt(9, livro.getId());
             stmt.executeUpdate();
         } catch (SQLException e) {
             throw new RuntimeException("Erro ao atualizar livro: " + e.getMessage(), e);
@@ -93,7 +103,7 @@ public class LivroDAOImpl implements LivroDAO {
     public void deletar(int id) {
         String sql = "DELETE FROM livros WHERE id = ?";
         try (Connection conn = ConexaoBanco.getConexao();
-             PreparedStatement stmt = conn.prepareStatement(sql)) {
+                PreparedStatement stmt = conn.prepareStatement(sql)) {
             stmt.setInt(1, id);
             stmt.executeUpdate();
         } catch (SQLException e) {
@@ -106,9 +116,11 @@ public class LivroDAOImpl implements LivroDAO {
                 rs.getInt("id"),
                 rs.getString("titulo"),
                 rs.getString("autor"),
+                rs.getString("editora"),
                 rs.getString("isbn"),
+                rs.getInt("ano_publicacao"),
                 rs.getInt("quantidade"),
-                rs.getString("categoria")
-        );
+                rs.getString("status_livro"),
+                rs.getString("categoria"));
     }
 }

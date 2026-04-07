@@ -16,7 +16,7 @@ public class EmprestimoDAOImpl implements EmprestimoDAO {
     public void salvar(Emprestimo emprestimo) {
         String sql = "INSERT INTO emprestimos (usuario_id, livro_id, data_emprestimo, data_prevista_devolucao, status) VALUES (?, ?, ?, ?, ?)";
         try (Connection conn = ConexaoBanco.getConexao();
-             PreparedStatement stmt = conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
+                PreparedStatement stmt = conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
             stmt.setInt(1, emprestimo.getUsuario().getId());
             stmt.setInt(2, emprestimo.getLivro().getId());
             stmt.setString(3, emprestimo.getDataEmprestimo());
@@ -24,7 +24,8 @@ public class EmprestimoDAOImpl implements EmprestimoDAO {
             stmt.setString(5, emprestimo.getStatus().name());
             stmt.executeUpdate();
             ResultSet rs = stmt.getGeneratedKeys();
-            if (rs.next()) emprestimo.setId(rs.getInt(1));
+            if (rs.next())
+                emprestimo.setId(rs.getInt(1));
             System.out.println("✅ Empréstimo salvo com ID: " + emprestimo.getId());
         } catch (SQLException e) {
             throw new RuntimeException("Erro ao salvar empréstimo: " + e.getMessage(), e);
@@ -33,14 +34,16 @@ public class EmprestimoDAOImpl implements EmprestimoDAO {
 
     @Override
     public List<Emprestimo> listarTodos() {
-        String sql = "SELECT e.*, u.nome, u.email, u.telefone, l.titulo, l.autor, l.isbn, l.quantidade, l.categoria " +
+        String sql = "SELECT e.*, " +
+                "u.nome, u.email, u.cpf, u.telefone, u.data_cadastro, u.endereco, " +
+                "l.titulo, l.autor, l.editora, l.isbn, l.ano_publicacao, l.quantidade, l.status_livro, l.categoria " +
                 "FROM emprestimos e " +
                 "JOIN usuarios u ON e.usuario_id = u.id " +
                 "JOIN livros l ON e.livro_id = l.id";
         List<Emprestimo> emprestimos = new ArrayList<>();
         try (Connection conn = ConexaoBanco.getConexao();
-             PreparedStatement stmt = conn.prepareStatement(sql);
-             ResultSet rs = stmt.executeQuery()) {
+                PreparedStatement stmt = conn.prepareStatement(sql);
+                ResultSet rs = stmt.executeQuery()) {
             while (rs.next()) {
                 emprestimos.add(montarEmprestimo(rs));
             }
@@ -52,15 +55,17 @@ public class EmprestimoDAOImpl implements EmprestimoDAO {
 
     @Override
     public List<Emprestimo> listarAtivos() {
-        String sql = "SELECT e.*, u.nome, u.email, u.telefone, l.titulo, l.autor, l.isbn, l.quantidade, l.categoria " +
+        String sql = "SELECT e.*, " +
+                "u.nome, u.email, u.cpf, u.telefone, u.data_cadastro, u.endereco, " +
+                "l.titulo, l.autor, l.editora, l.isbn, l.ano_publicacao, l.quantidade, l.status_livro, l.categoria " +
                 "FROM emprestimos e " +
                 "JOIN usuarios u ON e.usuario_id = u.id " +
                 "JOIN livros l ON e.livro_id = l.id " +
                 "WHERE e.status = 'ATIVO'";
         List<Emprestimo> emprestimos = new ArrayList<>();
         try (Connection conn = ConexaoBanco.getConexao();
-             PreparedStatement stmt = conn.prepareStatement(sql);
-             ResultSet rs = stmt.executeQuery()) {
+                PreparedStatement stmt = conn.prepareStatement(sql);
+                ResultSet rs = stmt.executeQuery()) {
             while (rs.next()) {
                 emprestimos.add(montarEmprestimo(rs));
             }
@@ -72,13 +77,15 @@ public class EmprestimoDAOImpl implements EmprestimoDAO {
 
     @Override
     public Emprestimo buscarPorId(int id) {
-        String sql = "SELECT e.*, u.nome, u.email, u.telefone, l.titulo, l.autor, l.isbn, l.quantidade, l.categoria " +
+        String sql = "SELECT e.*, " +
+                "u.nome, u.email, u.cpf, u.telefone, u.data_cadastro, u.endereco, " +
+                "l.titulo, l.autor, l.editora, l.isbn, l.ano_publicacao, l.quantidade, l.status_livro, l.categoria " +
                 "FROM emprestimos e " +
                 "JOIN usuarios u ON e.usuario_id = u.id " +
                 "JOIN livros l ON e.livro_id = l.id " +
                 "WHERE e.id = ?";
         try (Connection conn = ConexaoBanco.getConexao();
-             PreparedStatement stmt = conn.prepareStatement(sql)) {
+                PreparedStatement stmt = conn.prepareStatement(sql)) {
             stmt.setInt(1, id);
             ResultSet rs = stmt.executeQuery();
             if (rs.next()) {
@@ -94,7 +101,7 @@ public class EmprestimoDAOImpl implements EmprestimoDAO {
     public void devolver(int id) {
         String sql = "UPDATE emprestimos SET status = 'DEVOLVIDO', data_devolucao = CURRENT_DATE WHERE id = ?";
         try (Connection conn = ConexaoBanco.getConexao();
-             PreparedStatement stmt = conn.prepareStatement(sql)) {
+                PreparedStatement stmt = conn.prepareStatement(sql)) {
             stmt.setInt(1, id);
             stmt.executeUpdate();
             System.out.println("✅ Empréstimo devolvido!");
@@ -107,7 +114,7 @@ public class EmprestimoDAOImpl implements EmprestimoDAO {
     public void deletar(int id) {
         String sql = "DELETE FROM emprestimos WHERE id = ?";
         try (Connection conn = ConexaoBanco.getConexao();
-             PreparedStatement stmt = conn.prepareStatement(sql)) {
+                PreparedStatement stmt = conn.prepareStatement(sql)) {
             stmt.setInt(1, id);
             stmt.executeUpdate();
             System.out.println("✅ Empréstimo deletado!");
@@ -121,16 +128,20 @@ public class EmprestimoDAOImpl implements EmprestimoDAO {
                 rs.getInt("usuario_id"),
                 rs.getString("nome"),
                 rs.getString("email"),
-                rs.getString("telefone")
-        );
+                rs.getString("cpf"),
+                rs.getString("telefone"),
+                rs.getTimestamp("data_cadastro"),
+                rs.getString("endereco"));
         Livro livro = new Livro(
                 rs.getInt("livro_id"),
                 rs.getString("titulo"),
                 rs.getString("autor"),
+                rs.getString("editora"),
                 rs.getString("isbn"),
+                rs.getInt("ano_publicacao"),
                 rs.getInt("quantidade"),
-                rs.getString("categoria")
-        );
+                rs.getString("status_livro"),
+                rs.getString("categoria"));
         return new Emprestimo(
                 rs.getInt("id"),
                 usuario,
@@ -138,7 +149,6 @@ public class EmprestimoDAOImpl implements EmprestimoDAO {
                 rs.getString("data_emprestimo"),
                 rs.getString("data_prevista_devolucao"),
                 rs.getString("data_devolucao"),
-                Status.valueOf(rs.getString("status"))
-        );
+                Status.valueOf(rs.getString("status")));
     }
 }
